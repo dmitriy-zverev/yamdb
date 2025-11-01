@@ -66,7 +66,7 @@ class SignupSerializer(serializers.Serializer):
         if username_exists and email_exists:
             raise serializers.ValidationError({
                 'username':
-                username,
+                'Имя пользователя или почта уже используются',
                 'email':
                 'Имя пользователя или почта уже используются',
             })
