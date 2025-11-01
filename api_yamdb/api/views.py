@@ -1,12 +1,17 @@
+from rest_framework import status, permissions, viewsets, filters
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import (
     SignupSerializer,
     TokenByCodeSerializer,
+    UserSerializer,
 )
+from .models import User
+from .permissions import IsAdminRole
 
 
 class SignupView(APIView):
@@ -39,3 +44,29 @@ class ObtainTokenByCodeView(APIView):
         refresh = RefreshToken.for_user(user)
         access = refresh.access_token
         return Response({'token': str(access)}, status=status.HTTP_200_OK)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminRole]
+    lookup_field = 'username'
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['username', 'email', 'role']
+    search_fields = ['username', 'email', 'role']
+
+    @action(detail=False,
+            methods=['get', 'patch'],
+            url_path='me',
+            permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        if request.method.lower() == 'get':
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+
+        serializer = self.get_serializer(request.user,
+                                         data=request.data,
+                                         partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

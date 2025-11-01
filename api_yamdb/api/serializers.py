@@ -13,6 +13,14 @@ MAX_USERNAME_LENGTH = 150
 MAX_EMAIL_LENGTH = 254
 
 
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'role',
+                  'bio')
+
+
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField()
     email = serializers.EmailField()
