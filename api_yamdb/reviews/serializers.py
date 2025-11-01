@@ -2,7 +2,7 @@ import re
 
 from rest_framework import serializers
 
-from .models import Category
+from .models import Category, Genre
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -19,4 +19,20 @@ class CategorySerializer(serializers.ModelSerializer):
         if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
             raise serializers.ValidationError(
                 'Неверный формат названия сегмента')
+        return attrs
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+
+    def validate(self, attrs):
+        slug = attrs['slug']
+        if Genre.objects.filter(slug=slug).exists():
+            raise serializers.ValidationError(
+                'Жанр с таким названием уже существует')
+        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
+            raise serializers.ValidationError('Неверный формат названия жанра')
         return attrs

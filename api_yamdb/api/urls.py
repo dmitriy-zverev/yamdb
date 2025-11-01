@@ -7,11 +7,15 @@ from .views import (
     UserViewSet,
 )
 
-from reviews.views import CategoryViewSet
+from reviews.views import (
+    CategoryViewSet,
+    GenreViewSet,
+)
 
 router_v1 = routers.DefaultRouter()
 router_v1.register('users', UserViewSet)
 router_v1.register('categories', CategoryViewSet)
+router_v1.register('genres', GenreViewSet)
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
