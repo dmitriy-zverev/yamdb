@@ -54,6 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['username', 'email', 'role']
     search_fields = ['username', 'email', 'role']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(detail=False,
             methods=['get', 'patch'],
@@ -67,6 +68,16 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user,
                                          data=request.data,
                                          partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance,
+                                         data=request.data,
+                                         partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

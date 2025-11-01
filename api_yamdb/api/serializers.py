@@ -20,6 +20,32 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'first_name', 'last_name', 'role',
                   'bio')
 
+    def validate_username(self, value):
+        if len(value) == 0 or len(value) > MAX_USERNAME_LENGTH:
+            raise serializers.ValidationError(
+                'Имя пользователя содержит недопустимые символы')
+        if (value in RESERVED_USERNAMES
+                or User.objects.filter(username=value).exists()):
+            raise serializers.ValidationError('Имя пользователя занято')
+        return value
+
+    def validate_email(self, value):
+        if len(value) == 0 or len(value) > MAX_EMAIL_LENGTH:
+            raise serializers.ValidationError(
+                'Неверный формат электронной почты')
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Эта почта уже используется')
+        return value
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        user = request.user
+
+        if not (user and user.is_authenticated and user.is_admin):
+            validated_data.pop('role', None)
+
+        return super().update(instance, validated_data)
+
 
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField()
