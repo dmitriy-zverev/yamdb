@@ -9,6 +9,7 @@ from .serializers import (
     SignupSerializer,
     TokenByCodeSerializer,
     UserSerializer,
+    SigninSerializer,
 )
 from .models import User
 from .permissions import IsAdminRole
@@ -44,6 +45,18 @@ class ObtainTokenByCodeView(APIView):
         refresh = RefreshToken.for_user(user)
         access = refresh.access_token
         return Response({'token': str(access)}, status=status.HTTP_200_OK)
+
+
+class SigninView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = SigninSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            'username': serializer.validated_data['username'],
+        })
 
 
 class UserViewSet(viewsets.ModelViewSet):

@@ -122,3 +122,34 @@ class TokenByCodeSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class SigninSerializer(serializers.Serializer):
+    username = serializers.CharField()
+
+    def validate(self, attrs):
+        username = attrs['username']
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({
+                'username':
+                'Пользователь не найден, проверьте правильность логина',
+            })
+
+        attrs['user'] = user
+        return attrs
+
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        code = default_token_generator.make_token(user)
+
+        send_mail(
+            subject='Код для входа в аккаунт',
+            message=f'Ваш код: {code}',
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        return user
