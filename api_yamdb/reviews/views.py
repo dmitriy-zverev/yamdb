@@ -15,9 +15,7 @@ from .serializers import (
 from .filters import TitleFilter
 
 from api.permissions import (
-    ReadOnlyOrAdmin,
-    ReadOnlyOrAuthenticated,
-)
+    ReadOnlyOrAdmin, )
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

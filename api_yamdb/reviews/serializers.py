@@ -48,36 +48,50 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
                   'category')
 
+    def validate_rating(self, value):
+        if value < 0 or value > 10:
+            raise serializers.ValidationError('Неверный формат рейтинга')
+        return value
+
     def validate(self, attrs):
         year = attrs.get('year', None)
-        rating = attrs.get('rating', 0)
-        genre = attrs.get('genre', None)
-        category = attrs.get('category', None)
 
-        if year is None or year < 0 or year > datetime.date.today().year:
+        if self.instance is None and year is None:
             raise serializers.ValidationError('Неверный формат года')
-        if rating < 0 or rating > 10:
-            raise serializers.ValidationError('Неверный формат рейтинга')
-        if genre is None or genre == []:
-            raise serializers.ValidationError('Неверный формат жанра')
-        if category is None:
-            raise serializers.ValidationError('Неверный формат категории')
 
+        if year is not None and (year < 0
+                                 or year > datetime.date.today().year):
+            raise serializers.ValidationError('Неверный формат года')
         return attrs
 
     def create(self, validated_data):
-        category_slug = self.initial_data.get('category')
-        genre_slugs = self.initial_data.get('genre')
+        category_slug = self.initial_data.get('category', None)
+        genre_slugs = self.initial_data.get('genre', None)
+
+        if genre_slugs is None or genre_slugs == []:
+            raise serializers.ValidationError(
+                {'genre': 'Неверный формат жанра'})
+        if category_slug is None:
+            raise serializers.ValidationError(
+                {'category': 'Неверный формат категории'})
+
+        category = Category.objects.get(slug=category_slug)
+        genres = list(Genre.objects.filter(slug__in=genre_slugs))
+
+        if len(genres) != len(genre_slugs):
+            raise serializers.ValidationError(
+                {'genre': 'Таких жанров не существует'})
+        if category is None:
+            raise serializers.ValidationError(
+                {'category': 'Такой категории не существует'})
 
         title = Title.objects.create(**validated_data)
 
         if category_slug:
-            category = Category.objects.get(slug=category_slug)
             title.category = category
             title.save(update_fields=['category'])
 
         if genre_slugs:
-            genres = list(Genre.objects.filter(slug__in=genre_slugs))
             title.genre.set(genres)
 
         return title
@@ -89,12 +103,19 @@ class TitleSerializer(serializers.ModelSerializer):
         genre_slugs = self.initial_data.get('genre')
 
         if category_slug:
-            category = Category.objects.get(slug=category_slug)
+            try:
+                category = Category.objects.get(slug=category_slug)
+            except Category.DoesNotExist:
+                raise serializers.ValidationError(
+                    f"Категория с слагом '{category_slug}' не найдена")
             instance.category = category
             instance.save(update_fields=['category'])
 
         if genre_slugs:
             genres = list(Genre.objects.filter(slug__in=genre_slugs))
+            if len(genres) != len(genre_slugs):
+                raise serializers.ValidationError(
+                    {'genre': 'Таких жанров не существует'})
             instance.genre.set(genres)
 
         instance.refresh_from_db()
