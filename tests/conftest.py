@@ -9,10 +9,8 @@ sys.path.append(BASE_DIR)
 root_dir_content = os.listdir(BASE_DIR)
 PROJECT_DIR_NAME = 'api_yamdb'
 
-if (
-        PROJECT_DIR_NAME not in root_dir_content
-        or not os.path.isdir(os.path.join(BASE_DIR, PROJECT_DIR_NAME))
-):
+if (PROJECT_DIR_NAME not in root_dir_content
+        or not os.path.isdir(os.path.join(BASE_DIR, PROJECT_DIR_NAME))):
     assert False, (
         f'В директории `{BASE_DIR}` не найдена папка c проектом '
         f'`{PROJECT_DIR_NAME}`. Убедитесь, что у вас верная структура проекта.'
@@ -25,10 +23,9 @@ FILENAME = 'manage.py'
 if FILENAME not in project_dir_content:
     assert False, (
         f'В директории `{MANAGE_PATH}` не найден файл `{FILENAME}`. '
-        f'Убедитесь, что у вас верная структура проекта.'
-    )
+        f'Убедитесь, что у вас верная структура проекта.')
 
-assert get_version() < '4.0.0', 'Пожалуйста, используйте версию Django < 4.0.0'
+assert get_version() < '6.0.0', 'Пожалуйста, используйте версию Django < 6.0.0'
 
 pytest_plugins = [
     'tests.fixtures.fixture_user',
