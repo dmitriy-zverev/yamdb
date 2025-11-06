@@ -14,6 +14,7 @@ from reviews.views import (
     GenreViewSet,
     TitleViewSet,
     ReviewViewSet,
+    CommentViewSet,
 )
 
 router_v1 = routers.DefaultRouter()
@@ -27,9 +28,15 @@ titles_router_v1 = nested_routers.NestedDefaultRouter(router_v1,
                                                       lookup='title')
 titles_router_v1.register(r'reviews', ReviewViewSet, basename='reviews')
 
+reviews_router_v1 = nested_routers.NestedDefaultRouter(titles_router_v1,
+                                                       r'reviews',
+                                                       lookup='review')
+reviews_router_v1.register(r'comments', CommentViewSet, basename='comments')
+
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/', include(titles_router_v1.urls)),
+    path('v1/', include(reviews_router_v1.urls)),
     path('v1/auth/signup/', SignupView.as_view(), name='auth-signup'),
     path('v1/auth/signin/', SigninView.as_view(), name='auth-signin'),
     path('v1/auth/token/', ObtainTokenByCodeView.as_view(), name='auth-token'),

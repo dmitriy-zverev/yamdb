@@ -59,3 +59,21 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.text}: {self.author}'
+
+
+class Comment(models.Model):
+    text = models.TextField()
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        related_name='comments',
+    )
+    pub_date = models.DateTimeField(blank=True)
+    review = models.ForeignKey(Review,
+                               on_delete=models.CASCADE,
+                               related_name='comemnts')
+
+    def __str__(self):
+        return f'{self.text}: {self.author}'

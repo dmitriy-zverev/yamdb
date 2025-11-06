@@ -8,6 +8,7 @@ from .models import (
     Genre,
     Title,
     Review,
+    Comment,
 )
 
 from .utils import calculate_title_rating
@@ -168,4 +169,26 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         review = Review.objects.create(**validated_data)
+        return review
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+        read_only_fields = ('id', 'author')
+
+    def validate(self, attrs):
+        text = attrs.get('text', None)
+
+        if self.instance is None and text is None:
+            raise serializers.ValidationError(
+                {'text': 'Текст не может быть пустым'})
+
+        return attrs
+
+    def create(self, validated_data):
+        review = Comment.objects.create(**validated_data)
         return review
