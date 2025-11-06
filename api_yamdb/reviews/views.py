@@ -98,6 +98,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
             raise PermissionDenied('Вы не можете редактировать чужой отзыв')
         serializer.save()
 
+    def perform_destroy(self, instance):
+        if (self.request.user != instance.author
+                and self.request.user.role not in ['admin', 'moderator']):
+            raise PermissionDenied('Вы не можете удалить чужой комментарий')
+        instance.delete()
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
@@ -135,5 +141,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if (self.request.user != instance.author
                 and self.request.user.role not in ['admin', 'moderator']):
-            raise PermissionDenied('Вы не можете редактировать чужой отзыв')
+            raise PermissionDenied(
+                'Вы не можете редактировать чужой комментарий')
         serializer.save()
+
+    def perform_destroy(self, instance):
+        if (self.request.user != instance.author
+                and self.request.user.role not in ['admin', 'moderator']):
+            raise PermissionDenied('Вы не можете удалить чужой комментарий')
+        instance.delete()

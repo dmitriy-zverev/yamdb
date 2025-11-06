@@ -54,8 +54,8 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
-                  'category', 'review')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',
+                  'review')
 
     def validate_rating(self, value):
         if value < 0 or value > 10:
